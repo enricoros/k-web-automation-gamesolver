@@ -16,7 +16,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#include "Classifier.h"
+#include "HueClassifier.h"
 #include <QVector>
 #include <QColor>
 #include <math.h>
@@ -33,21 +33,25 @@ struct ClassItem {
     Spectrum hs, vs;
 };
 
-Classifier::Classifier( const QSize & tileSize, QObject * parent )
+HueClassifier::HueClassifier( const QSize & tileSize, QObject * parent )
     : QObject( parent )
     , m_tileSize( tileSize )
 {
 }
 
-Classifier::~Classifier()
+HueClassifier::~HueClassifier()
 {
     qDeleteAll( m_classes );
 }
 
-void Classifier::addClass( int index, const QImage & image )
+void HueClassifier::addClass( int index, const QImage & image )
 {
-    if ( image.size() != m_tileSize ) {
-        qWarning( "Classifier::addClass: we only support '%dx%d' size images; won't classify this one", m_tileSize.width(), m_tileSize.height() );
+    if ( m_tileSize.isNull() ) {
+        m_tileSize = image.size();
+        qWarning( "HueClassifier::addClass: assuming the size (%d, %d) from the first sample", image.width(), image.height() );
+    }
+    else if ( image.size() != m_tileSize ) {
+        qWarning( "HueClassifier::addClass: we only support '%dx%d' size images; won't classify this one", m_tileSize.width(), m_tileSize.height() );
         return;
     }
 
@@ -59,7 +63,7 @@ void Classifier::addClass( int index, const QImage & image )
     calcSpectra( ci->image, &ci->hs, &ci->vs );
 }
 
-void Classifier::deleteClasses( int index )
+void HueClassifier::deleteClasses( int index )
 {
     QList< ClassItem * >::iterator it = m_classes.begin();
     while ( it != m_classes.end() ) {
@@ -71,19 +75,19 @@ void Classifier::deleteClasses( int index )
     }
 }
 
-QSize Classifier::tileSize() const
+QSize HueClassifier::tileSize() const
 {
     return m_tileSize;
 }
 
-ClassifyResult Classifier::classify( const QImage & image ) const
+ClassifyResult HueClassifier::classify( const QImage & image ) const
 {
     // get ready with the response structure
     ClassifyResult cr;
     cr.index = -1;
     cr.confidence = 0;
     if ( image.size() != m_tileSize ) {
-        qWarning( "Classifier::classify: we only support '%dx%d' size images; won't classify this one", m_tileSize.width(), m_tileSize.height() );
+        qWarning( "HueClassifier::classify: we only support '%dx%d' size images; won't classify this one", m_tileSize.width(), m_tileSize.height() );
         return cr;
     }
 
@@ -105,7 +109,7 @@ ClassifyResult Classifier::classify( const QImage & image ) const
     return cr;
 }
 
-void Classifier::calcSpectra( const QImage & image, Spectrum * h, Spectrum * v ) const
+void HueClassifier::calcSpectra( const QImage & image, Spectrum * h, Spectrum * v ) const
 {
     int W = image.width();
     int H = image.height();
@@ -159,7 +163,7 @@ void Classifier::calcSpectra( const QImage & image, Spectrum * h, Spectrum * v )
         v->weight[ j ] = vPower ? W * v->power[ j ] / vPower : 0.0;
 }
 
-double Classifier::compareSpectra( const Spectrum * a, const Spectrum * b ) const
+double HueClassifier::compareSpectra( const Spectrum * a, const Spectrum * b ) const
 {
     double confidence = 0;
     int size = a->hue.size();

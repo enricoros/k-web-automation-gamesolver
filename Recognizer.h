@@ -21,7 +21,7 @@
 
 #include <QObject>
 #include <QPixmap>
-#include "Classifier.h"
+#include "HueClassifier.h"
 
 struct RecoResult {
     int rows;
@@ -37,7 +37,7 @@ class Recognizer : public QObject
 {
     Q_OBJECT
     public:
-        Recognizer( Classifier * classifier, QObject * parent = 0 );
+        Recognizer( HueClassifier * classifier, QObject * parent = 0 );
 
         // init
         void setup( int hBlocks, int vBlocks );
@@ -47,7 +47,7 @@ class Recognizer : public QObject
         QPixmap output() const;
 
     private:
-        Classifier * m_classifier;
+        HueClassifier * m_classifier;
         int m_hBlocks;
         int m_vBlocks;
         QPixmap m_outPix;

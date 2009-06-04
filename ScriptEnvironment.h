@@ -1,6 +1,6 @@
 /***************************************************************************
- * Copyright (c) 2009 Koral                                                *
- *         2009 Koral <koral@email.it>                                     *
+ * Copyright (c) 2009 Enrico Ros                                           *
+ *         2009 Enrico Ros <enrico.ros@email.it>                           *
  *                                                                         *
  * Permission is hereby granted, free of charge, to any person             *
  * obtaining a copy of this software and associated documentation          *
@@ -16,42 +16,31 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef __Classifier_h__
-#define __Classifier_h__
+#ifndef __ScriptEnvironment_h__
+#define __ScriptEnvironment_h__
 
 #include <QObject>
-#include <QImage>
-#include <QSize>
+class QScriptEngine;
+class QPlainTextEdit;
+class ScreenCapture;
 
-struct Spectrum;
-struct ClassItem;
-struct ClassifyResult {
-    int index;
-    double confidence;
-
-    ClassifyResult() : index( -1 ), confidence( 0 ) {}
-};
-
-class Classifier : public QObject
+/**
+    \brief Setup HOST script bindings and execute GameSolver script code.
+*/
+class ScriptEnvironment : public QObject
 {
     Q_OBJECT
     public:
-        Classifier( const QSize & tileSize, QObject * parent = 0 );
-        ~Classifier();
+        ScriptEnvironment(ScreenCapture * capture, QObject * parent = 0);
+        ~ScriptEnvironment();
 
-        // train the classifier
-        void addClass( int index, const QImage & image );
-        void deleteClasses( int index );
-
-        // do the classification
-        QSize tileSize() const;
-        ClassifyResult classify( const QImage & image ) const;
+        // inject scripts here
+        void setScript(const QString & script, const QString & fileName = QString(), int lineNumber = 1);
 
     private:
-        void calcSpectra( const QImage & image, Spectrum * h, Spectrum * v ) const;
-        double compareSpectra( const Spectrum * a, const Spectrum * b ) const;
-        QSize m_tileSize;
-        QList< ClassItem * > m_classes;
+        void evaluate(const QString & script, const QString & fileName = QString(), int lineNumber = 1);
+        QScriptEngine * m_engine;
+        QPlainTextEdit * m_errorWindow;
 };
 
 #endif

@@ -1,6 +1,6 @@
 /***************************************************************************
- * Copyright (c) 2009 Enrico Ros                                           *
- *         2009 Enrico Ros <enrico.ros@email.it>                           *
+ * Copyright (c) 2009 Koral                                                *
+ *         2009 Koral <koral@email.it>                                     *
  *                                                                         *
  * Permission is hereby granted, free of charge, to any person             *
  * obtaining a copy of this software and associated documentation          *
@@ -16,16 +16,42 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <QtGui/QApplication>
-#include "GameSolver.h"
+#ifndef __HueClassifier_h__
+#define __HueClassifier_h__
 
-int main(int argc, char *argv[])
+#include <QObject>
+#include <QImage>
+#include <QSize>
+
+struct Spectrum;
+struct ClassItem;
+struct ClassifyResult {
+    int index;
+    double confidence;
+
+    ClassifyResult() : index( -1 ), confidence( 0 ) {}
+};
+
+class HueClassifier : public QObject
 {
-    QApplication a(argc, argv);
-    a.setOrganizationName("Enrico Ros");
-    a.setApplicationName("GameSolver");
-    a.setApplicationVersion("0.2");
-    GameSolver w;
-    w.show();
-    return a.exec();
-}
+    Q_OBJECT
+    public:
+        HueClassifier( const QSize & tileSize = QSize(), QObject * parent = 0 );
+        ~HueClassifier();
+
+        // train the classifier
+        void addClass( int index, const QImage & image );
+        void deleteClasses( int index );
+
+        // do the classification
+        QSize tileSize() const;
+        ClassifyResult classify( const QImage & image ) const;
+
+    private:
+        void calcSpectra( const QImage & image, Spectrum * h, Spectrum * v ) const;
+        double compareSpectra( const Spectrum * a, const Spectrum * b ) const;
+        QSize m_tileSize;
+        QList< ClassItem * > m_classes;
+};
+
+#endif

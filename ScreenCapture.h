@@ -36,9 +36,6 @@ class ScreenCapture : public QObject
         // to capture the Screen Contents
         ScreenCapture( QObject * parent = 0 );
 
-        // manual capture
-        QPixmap capture( int x = 0, int y = 0, int w = -1, int h = -1 );
-
         // automatic configuration (will emit 'gotPixmap')
         void setEnabled( bool enabled );
         bool enabled() const;
@@ -47,6 +44,10 @@ class ScreenCapture : public QObject
         void setFrequency( int fps );
         int frequency() const;
         QPixmap lastPixmap() const;
+
+    public Q_SLOTS:
+        // manual capture
+        QPixmap capture( int x = 0, int y = 0, int w = -1, int h = -1 );
 
     Q_SIGNALS:
         void gotPixmap( const QPixmap & pixmap, const QPoint & cursorPos );

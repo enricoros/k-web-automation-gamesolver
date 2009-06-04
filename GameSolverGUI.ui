@@ -14,7 +14,7 @@
    <string>GameSolver</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="0">
+   <item row="1" column="0" colspan="2">
     <widget class="QWebView" name="webView">
      <property name="url">
       <url>
@@ -23,7 +23,7 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="0">
+   <item row="2" column="0" colspan="2">
     <widget class="QProgressBar" name="progressBar">
      <property name="value">
       <number>0</number>
@@ -34,6 +34,13 @@
     <widget class="QPushButton" name="pushButton">
      <property name="text">
       <string>snap</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QPushButton" name="pushButton_2">
+     <property name="text">
+      <string>script</string>
      </property>
     </widget>
    </item>

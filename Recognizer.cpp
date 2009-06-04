@@ -21,7 +21,7 @@
 #include <QPixmap>
 #include <QPainter>
 
-Recognizer::Recognizer( Classifier * classifier, QObject * parent )
+Recognizer::Recognizer( HueClassifier * classifier, QObject * parent )
     : QObject( parent )
     , m_classifier( classifier )
     , m_hBlocks( 0 )
