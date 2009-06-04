@@ -3,7 +3,7 @@
 # -------------------------------------------------
 QT += script \
     webkit
-TARGET = bjsolver
+TARGET = GameSolver
 TEMPLATE = app
 SOURCES += main.cpp \
     GameSolver.cpp \
@@ -25,4 +25,4 @@ OBJECTS_DIR = .obj
 MOC_DIR = .obj
 RCC_DIR = .obj
 UI_DIR = .obj
-OTHER_FILES += bejeweled.js
+OTHER_FILES += testscript.js

@@ -44,9 +44,10 @@ GameSolver::~GameSolver()
 
 void GameSolver::on_pushButton_2_clicked()
 {
-    QFile scriptFile("bejeweled.js");
+    QString fileName = "testscript.js";
+    QFile scriptFile(fileName);
     if (!scriptFile.open(QIODevice::ReadOnly)) {
-        qWarning("Can't load bejeweled.js");
+        qWarning("Can't load %s", qPrintable(fileName));
         return;
     }
     m_script->setScript(scriptFile.readAll());
