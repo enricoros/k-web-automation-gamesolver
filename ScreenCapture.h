@@ -30,15 +30,22 @@ class ScreenCapture : public QObject
 {
     Q_OBJECT
     public:
-        ScreenCapture( QObject * parent );
+        // to capture a QWidget
+        ScreenCapture( QWidget * target, QObject * parent = 0 );
 
+        // to capture the Screen Contents
+        ScreenCapture( QObject * parent = 0 );
+
+        // manual capture
+        QPixmap capture( int x = 0, int y = 0, int w = -1, int h = -1 );
+
+        // automatic configuration (will emit 'gotPixmap')
         void setEnabled( bool enabled );
         bool enabled() const;
         void setGeometry( const QRect & geometry );
         QRect geometry() const;
         void setFrequency( int fps );
         int frequency() const;
-
         QPixmap lastPixmap() const;
 
     Q_SIGNALS:
@@ -48,6 +55,7 @@ class ScreenCapture : public QObject
         void timerEvent( QTimerEvent * event );
 
     private:
+        QWidget * m_targetWidget;
         QBasicTimer m_timer;
         QPixmap m_pixmap;
         QRect m_geometry;

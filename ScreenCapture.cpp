@@ -32,9 +32,29 @@
 
 ScreenCapture::ScreenCapture( QObject * parent )
     : QObject( parent )
+    , m_targetWidget( 0 )
     , m_enabled( false )
     , m_fps( 0 )
 {
+}
+
+ScreenCapture::ScreenCapture( QWidget * target, QObject * parent )
+    : QObject( parent )
+    , m_targetWidget( target )
+    , m_enabled( false )
+    , m_fps( 0 )
+{
+}
+
+QPixmap ScreenCapture::capture( int x, int y, int w, int h )
+{
+    return QPixmap::grabWindow( m_targetWidget ? m_targetWidget->winId() :
+#if defined(Q_WS_X11)
+            QX11Info::appRootWindow(),
+#else
+            QApplication::desktop()->winId(),
+#endif
+            x, y, w, h );
 }
 
 void ScreenCapture::setEnabled( bool enabled )
@@ -81,13 +101,9 @@ void ScreenCapture::timerEvent( QTimerEvent * event )
     if ( !m_enabled )
         return;
 
-    m_pixmap = QPixmap::grabWindow(
-#if defined(Q_WS_X11)
-            QX11Info::appRootWindow(),
-#else
-            QApplication::desktop()->winId(),
-#endif
-            m_geometry.left(), m_geometry.top(), m_geometry.width(), m_geometry.height() );
+    // grab pixmap
+    m_pixmap = capture( m_geometry.left(), m_geometry.top(), m_geometry.width(), m_geometry.height() );
 
+    // emit it
     emit gotPixmap( m_pixmap, QCursor::pos() - QPoint( m_geometry.topLeft() ) );
 }
