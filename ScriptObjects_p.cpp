@@ -20,6 +20,10 @@
 #include "HueClassifier.h"
 #include "ScreenCapture.h"
 #include "ScreenCapture.h"
+#include <QDialog>
+#include <QInputDialog>
+#include <QLabel>
+#include <QVBoxLayout>
 #include <QtScript>
 
 namespace ScriptObjects {
@@ -54,13 +58,14 @@ ColorClassifier::~ColorClassifier()
 void ColorClassifier::loadDictionary(const QString & directory)
 {
 #if 0
-    QString dirString = QDir::toNativeSeparators(QCoreApplication::applicationDirPath()) + QDir::separator() + directory;
+    m_dictionaryDir = QDir::toNativeSeparators(QCoreApplication::applicationDirPath()) + QDir::separator() + directory;
 #else
-    QString dirString = directory;
+    m_dictionaryDir = directory;
 #endif
-    QDirIterator dIt(dirString, QStringList() << "*_*.png", QDir::Files);
+    QDir().mkpath(m_dictionaryDir);
+    QDirIterator dIt(m_dictionaryDir, QStringList() << "*_*.png", QDir::Files);
     if (!dIt.hasNext())
-        qWarning() << "ColorClassifier::loadDictionary: no files in current directory" << dirString;
+        qWarning() << "ColorClassifier::loadDictionary: no files in current directory" << m_dictionaryDir;
     while (dIt.hasNext()) {
         QString fileName = dIt.next();
 
@@ -84,6 +89,31 @@ void ColorClassifier::loadDictionary(const QString & directory)
         m_classifier->addClass(number, image);
         qWarning() <<  "ColorClassifier::loadDictionary: loaded" << fileName;
     }
+}
+
+QScriptValue ColorClassifier::classify(const QScriptValue & value)
+{
+    // get the pixmap out of the value
+    Image * image = qobject_cast<Image *>(value.toQObject());
+    if (!image) {
+        qWarning("ColorClassifier::classify: classifying the wrong type");
+        return engine()->undefinedValue();
+    }
+
+    // classify the image
+    QImage img = image->pixmap().toImage();
+    ClassifyResult cr = m_classifier->classify(img);
+    if (cr.confidence < 0.5) {
+        image->show(true);
+        cr.index = QInputDialog::getInt(0, tr("Insert integer value"), QString::number(cr.confidence), 1);
+        if (cr.index) {
+            m_classifier->addClass(cr.index, img);
+            if (!m_dictionaryDir.isEmpty())
+                img.save(m_dictionaryDir + QDir::separator() + tr("element_%1.png").arg(QString::number(cr.index)));
+        } else
+            return engine()->undefinedValue();
+    }
+    return engine()->newVariant(cr.index);
 }
 
 
@@ -163,5 +193,19 @@ void Image::save(const QString & fileName)
     }
 }
 
+void Image::show(bool block)
+{
+    QLabel * label = new QLabel();
+    label->setAttribute(Qt::WA_DeleteOnClose);
+    label->setFixedSize(m_pixmap.size());
+    label->setPixmap(m_pixmap);
+    if (block) {
+        QDialog dialog;
+        QVBoxLayout lay(&dialog);
+        lay.addWidget(label);
+        dialog.exec();
+    } else
+        label->show();
+}
 
 } // namespace ScriptObjects

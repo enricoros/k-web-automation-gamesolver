@@ -54,10 +54,12 @@ namespace ScriptObjects {
         ADD_QTSCRIPT_FACTORY(ColorClassifier)
         public Q_SLOTS:
             void loadDictionary(const QString & directory);
+            QScriptValue classify(const QScriptValue & value);
         private:
             ColorClassifier();
             ~ColorClassifier();
             HueClassifier * m_classifier;
+            QString m_dictionaryDir;
     };
 
     class Image : public QObject, public QScriptable {
@@ -73,8 +75,10 @@ namespace ScriptObjects {
             QScriptValue copy(int left, int top, int width, int height);
             QScriptValue split(int rows, int columns);
             void save(const QString & fileName);
+            void show(bool block = false);
         public:
             void setPixmap(const QPixmap & pixmap) { m_pixmap = pixmap; }
+            QPixmap pixmap() const { return m_pixmap; }
         private:
             QPixmap m_pixmap;
     };

@@ -46,11 +46,10 @@ HueClassifier::~HueClassifier()
 
 void HueClassifier::addClass( int index, const QImage & image )
 {
-    if ( m_tileSize.isNull() ) {
+    if ( m_tileSize.isEmpty() ) {
         m_tileSize = image.size();
         qWarning( "HueClassifier::addClass: assuming the size (%d, %d) from the first sample", image.width(), image.height() );
-    }
-    else if ( image.size() != m_tileSize ) {
+    } else if ( image.size() != m_tileSize ) {
         qWarning( "HueClassifier::addClass: we only support '%dx%d' size images; won't classify this one", m_tileSize.width(), m_tileSize.height() );
         return;
     }
