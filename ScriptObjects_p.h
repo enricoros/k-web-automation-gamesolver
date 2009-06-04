@@ -21,6 +21,7 @@
 
 #include <QObject>
 #include <QColor>
+#include <QPixmap>
 #include <QtScript>
 class HueClassifier;
 class ScreenCapture;
@@ -43,8 +44,10 @@ namespace ScriptObjects {
 
 
 /// define Exposed Prototype objects
+    #define BIND_QOBJECT_SCRIPT(instance, engine) \
+        engine->newQObject(instance, QScriptEngine::ScriptOwnership, QScriptEngine::ExcludeSuperClassMethods | QScriptEngine::ExcludeSuperClassProperties | QScriptEngine::ExcludeSuperClassContents | QScriptEngine::ExcludeDeleteLater);
     #define ADD_QTSCRIPT_FACTORY(classname) \
-        public: static QScriptValue factory(QScriptContext * /*context*/, QScriptEngine * engine) { classname * instance = new classname(); QScriptValue instanceValue = engine->newQObject(instance, QScriptEngine::ScriptOwnership, QScriptEngine::ExcludeSuperClassMethods | QScriptEngine::ExcludeSuperClassProperties | QScriptEngine::ExcludeSuperClassContents | QScriptEngine::ExcludeDeleteLater); return instanceValue; } private:
+        public: static QScriptValue __factory(QScriptContext * /*context*/, QScriptEngine * engine) { classname * instance = new classname(); return BIND_QOBJECT_SCRIPT(instance, engine); } private:
 
     class ColorClassifier : public QObject, public QScriptable  {
         Q_OBJECT
@@ -57,14 +60,23 @@ namespace ScriptObjects {
             HueClassifier * m_classifier;
     };
 
-    class Image : public QObject {
+    class Image : public QObject, public QScriptable {
         Q_OBJECT
         ADD_QTSCRIPT_FACTORY(Image);
-        Q_PROPERTY(QString color READ color WRITE setColor)
+        public: static QScriptValue __factory(const QPixmap &, QScriptContext *, QScriptEngine *);
+        Q_PROPERTY(int width READ width)
+        Q_PROPERTY(int height READ height)
+        public Q_SLOTS:
+            int width() const { return m_pixmap.width(); }
+            int height() const { return m_pixmap.height(); }
+            void trim(int left, int top, int right, int bottom);
+            QScriptValue copy(int left, int top, int width, int height);
+            QScriptValue split(int rows, int columns);
+            void save(const QString & fileName);
+        public:
+            void setPixmap(const QPixmap & pixmap) { m_pixmap = pixmap; }
         private:
-            QString color() const { return m_color.name(); }
-            void setColor( QString brush ) { m_color = QColor(brush); }
-            QColor m_color;
+            QPixmap m_pixmap;
     };
 
 } // namespace ScriptObjects

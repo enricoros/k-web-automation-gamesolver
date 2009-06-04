@@ -67,8 +67,8 @@ ScriptEnvironment::ScriptEnvironment(ScreenCapture * capture, QObject * parent)
 #define ADD_PROTOTYPE_CONSTRUCTOR(factoryFunction, scriptName) \
     {QScriptValue ffValue = m_engine->newFunction(factoryFunction); \
     m_engine->globalObject().setProperty(scriptName, ffValue, QScriptValue::ReadOnly | QScriptValue::Undeletable);}
-    ADD_PROTOTYPE_CONSTRUCTOR(ScriptObjects::ColorClassifier::factory, "Classifier");
-    ADD_PROTOTYPE_CONSTRUCTOR(ScriptObjects::Image::factory, "Image");
+    ADD_PROTOTYPE_CONSTRUCTOR(ScriptObjects::ColorClassifier::__factory, "Classifier");
+    ADD_PROTOTYPE_CONSTRUCTOR(ScriptObjects::Image::__factory, "Image");
 
     // debug scripts
     m_errorWindow = new QPlainTextEdit();
