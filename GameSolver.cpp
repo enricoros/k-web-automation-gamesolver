@@ -2,7 +2,73 @@
 #include "ScriptEnvironment.h"
 #include "ScreenCapture.h"
 #include "ui_GameSolverGUI.h"
+#include <QDir>
 #include <QFile>
+#include <QNetworkCookieJar>
+#include <QNetworkCookie>
+
+//BEGIN Cookie Permanent Storage
+class CookieStore : public QNetworkCookieJar {
+    public:
+        CookieStore(QObject *parent = 0)
+            : QNetworkCookieJar(parent)
+            , m_fileName(QDir::toNativeSeparators(QDir::homePath()) + QDir::separator() + ".temp-cookies")
+        {
+            loadFromDisk();
+        }
+
+        ~CookieStore()
+        {
+            flushToDisk();
+        }
+
+        void clear()
+        {
+            setAllCookies(QList<QNetworkCookie>());
+        }
+
+        void loadFromDisk()
+        {
+            // open the file and open a data stream over it
+            QFile cookiesFile(m_fileName);
+            if (!cookiesFile.open(QIODevice::ReadOnly)) {
+                qWarning("CookieStore::loadFromDisk: error loading cookies from '%s'", qPrintable(m_fileName));
+                return;
+            }
+            QDataStream cs(&cookiesFile);
+
+            // read all cookies
+            QList<QNetworkCookie> cookieList;
+            while (!cs.atEnd()) {
+                QByteArray rawCookie;
+                cs >> rawCookie;
+                cookieList.append(QNetworkCookie::parseCookies(rawCookie));
+            }
+
+            // set the internal cookie list
+            setAllCookies(cookieList);
+        }
+
+        void flushToDisk() const
+        {
+            // open the file and open a data stream over it
+            QFile cookiesFile(m_fileName);
+            if (!cookiesFile.open(QIODevice::WriteOnly)) {
+                qWarning("CookieStore::flushToDisk: error saving cookies to '%s'", qPrintable(m_fileName));
+                return;
+            }
+            QDataStream cs(&cookiesFile);
+
+            // write all cookies
+            foreach (QNetworkCookie cookie, allCookies())
+                cs << cookie.toRawForm();
+        }
+
+    private:
+        QString m_fileName;
+};
+//END Cookie Permanent Storage
+
 
 GameSolver::GameSolver(QWidget *parent)
     : QWidget(parent)
@@ -17,11 +83,13 @@ GameSolver::GameSolver(QWidget *parent)
     ui->progressBar->hide();
 
     // setup browser
-    QWebSettings * settings = ui->webView->settings();
-    settings->setAttribute(QWebSettings::JavascriptCanOpenWindows, true);
-    settings->setAttribute(QWebSettings::JavascriptCanAccessClipboard, true);
-    settings->setAttribute(QWebSettings::JavascriptEnabled, true);
-    settings->setAttribute(QWebSettings::PluginsEnabled, true);
+    QWebSettings * webSettings = ui->webView->settings();
+    webSettings->setAttribute(QWebSettings::JavascriptCanOpenWindows, true);
+    webSettings->setAttribute(QWebSettings::JavascriptCanAccessClipboard, true);
+    webSettings->setAttribute(QWebSettings::JavascriptEnabled, true);
+    webSettings->setAttribute(QWebSettings::PluginsEnabled, true);
+    QWebPage * webPage = ui->webView->page();
+    webPage->networkAccessManager()->setCookieJar(new CookieStore());
 
     // capture
     m_capture = new ScreenCapture(ui->webView, this);

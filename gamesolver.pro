@@ -2,6 +2,7 @@
 # Project created by QtCreator 2009-06-04T16:09:26
 # -------------------------------------------------
 QT += script \
+    network \
     webkit
 TARGET = GameSolver
 TEMPLATE = app
