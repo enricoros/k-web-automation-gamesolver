@@ -55,43 +55,50 @@ ColorClassifier::~ColorClassifier()
     delete m_classifier;
 }
 
-void ColorClassifier::loadDictionary(const QString & directory)
+void ColorClassifier::setDictionary(const QString & name, bool load)
 {
 #if 0
-    m_dictionaryDir = QDir::toNativeSeparators(QCoreApplication::applicationDirPath()) + QDir::separator() + directory;
+    m_dictionaryDir = QDir::toNativeSeparators(QCoreApplication::applicationDirPath()) + QDir::separator() + name;
 #else
-    m_dictionaryDir = directory;
+    m_dictionaryDir = name;
 #endif
+
+    // init the dictionary
+    m_classifier->clear();
     QDir().mkpath(m_dictionaryDir);
-    QDirIterator dIt(m_dictionaryDir, QStringList() << "*_*.png", QDir::Files);
-    if (!dIt.hasNext())
-        qWarning() << "ColorClassifier::loadDictionary: no files in current directory" << m_dictionaryDir;
-    while (dIt.hasNext()) {
-        QString fileName = dIt.next();
 
-        // get the number
-        QString numberString = fileName.section("_", -1, -1).section(".", 0, 0);
-        bool nOk;
-        int number = numberString.toInt(&nOk);
-        if (numberString.isEmpty() || !nOk) {
-            qWarning() << "ColorClassifier::loadDictionary: bad filename" << numberString;
-            continue;
+    // load from disk, if requested
+    if (load) {
+        QDirIterator dIt(m_dictionaryDir, QStringList() << "*_*.png", QDir::Files);
+        if (!dIt.hasNext())
+            qWarning() << "ColorClassifier::setDictionary: no files in current directory" << m_dictionaryDir;
+        while (dIt.hasNext()) {
+            QString fileName = dIt.next();
+
+            // get the number
+            QString numberString = fileName.section("_", -1, -1).section(".", 0, 0);
+            bool nOk;
+            int number = numberString.toInt(&nOk);
+            if (numberString.isEmpty() || !nOk) {
+                qWarning() << "ColorClassifier::setDictionary: bad filename" << numberString;
+                continue;
+            }
+
+            // get the image
+            QImage image( fileName, "PNG" );
+            if (image.isNull() ) {
+                qWarning() << "ColorClassifier::setDictionary: error loading image" << fileName;
+                continue;
+            }
+
+            // train the classifier
+            m_classifier->addClass(number, image);
+            qWarning() <<  "ColorClassifier::setDictionary: loaded" << fileName;
         }
-
-        // get the image
-        QImage image( fileName, "PNG" );
-        if (image.isNull() ) {
-            qWarning() << "ColorClassifier::loadDictionary: error loading image" << fileName;
-            continue;
-        }
-
-        // train the classifier
-        m_classifier->addClass(number, image);
-        qWarning() <<  "ColorClassifier::loadDictionary: loaded" << fileName;
     }
 }
 
-QScriptValue ColorClassifier::classify(const QScriptValue & value)
+QScriptValue ColorClassifier::classify(const QScriptValue & value, bool train)
 {
     // get the pixmap out of the value
     Image * image = qobject_cast<Image *>(value.toQObject());
@@ -103,7 +110,7 @@ QScriptValue ColorClassifier::classify(const QScriptValue & value)
     // classify the image
     QImage img = image->pixmap().toImage();
     ClassifyResult cr = m_classifier->classify(img);
-    if (cr.confidence < 0.5) {
+    if (train && cr.confidence < 0.2) {
         image->show(true);
         cr.index = QInputDialog::getInt(0, tr("Insert integer value"), QString::number(cr.confidence), 1);
         if (cr.index) {
@@ -193,13 +200,13 @@ void Image::save(const QString & fileName)
     }
 }
 
-void Image::show(bool block)
+void Image::show(bool modal)
 {
     QLabel * label = new QLabel();
     label->setAttribute(Qt::WA_DeleteOnClose);
     label->setFixedSize(m_pixmap.size());
     label->setPixmap(m_pixmap);
-    if (block) {
+    if (modal) {
         QDialog dialog;
         QVBoxLayout lay(&dialog);
         lay.addWidget(label);

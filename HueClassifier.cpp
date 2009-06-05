@@ -44,6 +44,13 @@ HueClassifier::~HueClassifier()
     qDeleteAll( m_classes );
 }
 
+void HueClassifier::clear()
+{
+    qDeleteAll( m_classes );
+    m_classes.clear();
+    m_tileSize = QSize();
+}
+
 void HueClassifier::addClass( int index, const QImage & image )
 {
     if ( m_tileSize.isEmpty() ) {
@@ -102,9 +109,6 @@ ClassifyResult HueClassifier::classify( const QImage & image ) const
             cr.confidence = confidence;
         }
     }
-
-    //qWarning( "i: %d, conf %f", cr.index, cr.confidence );
-
     return cr;
 }
 
@@ -129,8 +133,8 @@ void HueClassifier::calcSpectra( const QImage & image, Spectrum * h, Spectrum * 
         }
         QColor color( r / W, g / W, b / W );
         h->hue[ j ] = color.hueF();
-        //h->power[ j ] = (float)color.value() / 255.0;
-        h->power[ j ] = (float)color.value() * color.saturation() / (255*255);
+        h->power[ j ] = (float)color.value() / 255.0;
+        //h->power[ j ] = (float)color.value() * color.saturation() / (255*255);
         hPower += h->power[ j ];
     }
     h->weight.resize( H );
@@ -153,8 +157,8 @@ void HueClassifier::calcSpectra( const QImage & image, Spectrum * h, Spectrum * 
         }
         QColor color( r / H, g / H, b / H );
         v->hue[ j ] = color.hueF();
-        //v->power[ j ] = (float)color.value() / 255.0;
-        v->power[ j ] = (float)color.value() * color.saturation() / (255*255);
+        v->power[ j ] = (float)color.value() / 255.0;
+        //v->power[ j ] = (float)color.value() * color.saturation() / (255*255);
         vPower += v->power[ j ];
     }
     v->weight.resize( W );

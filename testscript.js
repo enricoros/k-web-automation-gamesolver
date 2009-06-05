@@ -1,24 +1,14 @@
-c = new Classifier;
-c.loadDictionary("dic1");
+// GAME parameters
+var b_w = 39, b_h = 40, n_x = 8, n_y = 8;
 
-var bw = 39, bh = 39, nbx = 8, nby = 8;
+cc = new ColorClassifier;
+cc.setDictionary("bej-dict");
 
-// 130, 263
-image = capture.capture().copy(190, 130, nbx * bw, nby * bh);
-image.show();
+image = capture.capture().copy(191, 126, n_x * b_w, n_y * b_h);
 
-array = image.split(nbx, nby);
-strings = new Array;
-
-print('4');
-
-for (i = 0; i < array.length; i++) {
-    img = array[i];
-    img.trim(4, 4, -4, -4);
-    s = c.classify(img);
-    print(i + ", " + s);
-    strings[i] = 1;
+blocks = image.split(n_x, n_y);
+for (i = 0; i < blocks.length; i++) {
+    blocks[i].trim(8, 8, -8, -8);
+    blocks[i].sym = cc.classify(blocks[i], false);
 }
-
-print('5');
 

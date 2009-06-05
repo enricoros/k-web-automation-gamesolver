@@ -39,6 +39,9 @@ class HueClassifier : public QObject
         HueClassifier( const QSize & tileSize = QSize(), QObject * parent = 0 );
         ~HueClassifier();
 
+        // reset
+        void clear();
+
         // train the classifier
         void addClass( int index, const QImage & image );
         void deleteClasses( int index );
