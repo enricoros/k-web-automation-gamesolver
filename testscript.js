@@ -1,10 +1,10 @@
 // GAME parameters
 var b_w = 39, b_h = 40, n_x = 8, n_y = 8;
 
-cc = new ColorClassifier;
+cc = new CV.Classifiers.Color;
 cc.setDictionary("bej-dict");
 
-image = capture.capture().copy(191, 126, n_x * b_w, n_y * b_h);
+image = CV.Capture.capture().copy(191, 126, n_x * b_w, n_y * b_h);
 
 blocks = image.split(n_x, n_y);
 for (i = 0; i < blocks.length; i++) {
@@ -12,3 +12,5 @@ for (i = 0; i < blocks.length; i++) {
     blocks[i].sym = cc.classify(blocks[i], false);
 }
 
+__describe__(CV);
+//print(CV);

@@ -11,14 +11,19 @@ SOURCES += main.cpp \
     ScreenCapture.cpp \
     InputUtils.cpp \
     ScriptEnvironment.cpp \
-    ScriptObjects_p.cpp \
-    HueClassifier.cpp
+    HueClassifier.cpp \
+    bindings/cv/Capture.cpp \
+    bindings/cv/Image.cpp \
+    bindings/cv/classifiers/Color.cpp
 HEADERS += GameSolver.h \
     ScreenCapture.h \
     InputUtils.h \
     ScriptEnvironment.h \
-    ScriptObjects_p.h \
-    HueClassifier.h
+    HueClassifier.h \
+    bindings/cv/Capture.h \
+    bindings/cv/Image.h \
+    bindings/cv/classifiers/Color.h \
+    bindings/Bindings.h
 FORMS += GameSolverGUI.ui
 unix:LIBS += -lXtst
 win32:CONFIG += console
